@@ -1,9 +1,6 @@
 # ROS 2 Warehouse Inspection Robot
 
-A ROS 2 Jazzy simulation of an autonomous warehouse inspection robot. The
-robot navigates a Gazebo warehouse with Nav2, patrols a fixed route, detects
-inspection panels with a custom YOLO model, approaches confirmed targets,
-records the result, and resumes its patrol.
+A ROS 2 Jazzy simulation of an autonomous warehouse inspection robot. The robot navigates a Gazebo warehouse with Nav2, patrols a fixed route, detects inspection panels with a custom YOLO model, approaches confirmed targets, records the result, and resumes its patrol.
 
 | Gazebo warehouse | YOLO panel detection |
 | --- | --- |
@@ -63,12 +60,9 @@ source install/setup.bash
 ros2 launch robot_perception inspection_patrol.launch.py
 ```
 
-Gazebo, RViz and the annotated camera view will open. Mission results are
-written to `~/.ros/autonomy_lab/inspection_records`.
+Gazebo, RViz and the annotated camera view will open. Mission results are written to `~/.ros/autonomy_lab/inspection_records`.
 
-The included detector was trained only on synthetic images from this warehouse
-and recognizes one class: `inspection_panel`. This is a simulation project, not
-a real-world safety or inspection system.
+The included detector was trained only on synthetic images from this warehouse and recognizes one class: `inspection_panel`. This is a simulation project, not a real-world safety or inspection system.
 
 ## License
 
