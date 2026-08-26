@@ -1,0 +1,359 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <world name="inspection_warehouse">
+    <!--
+      Autonomy Lab inspection warehouse
+
+      Overall interior: approximately 18 m x 14 m.
+      The geometry creates a navigable loop, shelf aisles, an equipment area,
+      a service bay, visual distractors and three inspection-panel targets.
+    -->
+
+    <physics name="default_physics" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- Core Gazebo systems. -->
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <scene>
+      <ambient>0.32 0.34 0.37 1</ambient>
+      <background>0.055 0.065 0.080 1</background>
+      <shadows>true</shadows>
+      <grid>true</grid>
+    </scene>
+
+    <!-- Soft daylight plus local ceiling lights create varied illumination. -->
+    <light type="directional" name="daylight">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 12 0 0 0</pose>
+      <diffuse>0.62 0.65 0.70 1</diffuse>
+      <specular>0.18 0.18 0.20 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.45 0.25 -0.86</direction>
+    </light>
+
+    <light type="point" name="storage_light">
+      <pose>-4.8 0 4.5 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <diffuse>0.75 0.80 0.88 1</diffuse>
+      <specular>0.10 0.10 0.12 1</specular>
+      <attenuation>
+        <range>10</range><constant>0.45</constant>
+        <linear>0.08</linear><quadratic>0.01</quadratic>
+      </attenuation>
+    </light>
+    <light type="point" name="workshop_light">
+      <pose>2.5 -2.4 4.2 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <diffuse>0.88 0.79 0.65 1</diffuse>
+      <specular>0.12 0.10 0.08 1</specular>
+      <attenuation>
+        <range>9</range><constant>0.45</constant>
+        <linear>0.09</linear><quadratic>0.012</quadratic>
+      </attenuation>
+    </light>
+    <light type="point" name="service_light">
+      <pose>7.0 2.7 4.2 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <diffuse>0.62 0.72 0.88 1</diffuse>
+      <specular>0.10 0.11 0.14 1</specular>
+      <attenuation>
+        <range>8</range><constant>0.50</constant>
+        <linear>0.10</linear><quadratic>0.014</quadratic>
+      </attenuation>
+    </light>
+
+    <!-- Infinite collision plane prevents objects falling outside the floor. -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="ground_link">
+        <collision name="ground_collision">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
+          </geometry>
+        </collision>
+        <visual name="ground_visual">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
+          </geometry>
+          <material>
+            <ambient>0.10 0.11 0.12 1</ambient>
+            <diffuse>0.14 0.15 0.17 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- The lighter concrete slab makes the warehouse footprint obvious. -->
+    <model name="warehouse_floor">
+      <static>true</static>
+      <pose>0 0 -0.025 0 0 0</pose>
+      <link name="floor_link">
+        <visual name="floor_visual">
+          <geometry><box><size>18 14 0.05</size></box></geometry>
+          <material>
+            <ambient>0.36 0.38 0.40 1</ambient>
+            <diffuse>0.46 0.48 0.50 1</diffuse>
+            <specular>0.08 0.08 0.08 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Outer walls: 18 m x 14 m, 2.5 m high. -->
+    <model name="outer_walls">
+      <static>true</static>
+      <link name="walls_link">
+        <collision name="north_collision">
+          <pose>0 7 1.25 0 0 0</pose>
+          <geometry><box><size>18.2 0.15 2.5</size></box></geometry>
+        </collision>
+        <visual name="north_visual">
+          <pose>0 7 1.25 0 0 0</pose>
+          <geometry><box><size>18.2 0.15 2.5</size></box></geometry>
+          <material><diffuse>0.69 0.72 0.75 1</diffuse></material>
+        </visual>
+
+        <collision name="south_collision">
+          <pose>0 -7 1.25 0 0 0</pose>
+          <geometry><box><size>18.2 0.15 2.5</size></box></geometry>
+        </collision>
+        <visual name="south_visual">
+          <pose>0 -7 1.25 0 0 0</pose>
+          <geometry><box><size>18.2 0.15 2.5</size></box></geometry>
+          <material><diffuse>0.69 0.72 0.75 1</diffuse></material>
+        </visual>
+
+        <collision name="east_collision">
+          <pose>9 0 1.25 0 0 0</pose>
+          <geometry><box><size>0.15 14.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="east_visual">
+          <pose>9 0 1.25 0 0 0</pose>
+          <geometry><box><size>0.15 14.2 2.5</size></box></geometry>
+          <material><diffuse>0.65 0.69 0.73 1</diffuse></material>
+        </visual>
+
+        <collision name="west_collision">
+          <pose>-9 0 1.25 0 0 0</pose>
+          <geometry><box><size>0.15 14.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="west_visual">
+          <pose>-9 0 1.25 0 0 0</pose>
+          <geometry><box><size>0.15 14.2 2.5</size></box></geometry>
+          <material><diffuse>0.65 0.69 0.73 1</diffuse></material>
+        </visual>
+
+        <!-- Dark base trim makes walls easier to read in the RGB image. -->
+        <visual name="north_trim">
+          <pose>0 6.90 0.16 0 0 0</pose>
+          <geometry><box><size>17.8 0.05 0.30</size></box></geometry>
+          <material><diffuse>0.16 0.19 0.22 1</diffuse></material>
+        </visual>
+        <visual name="south_trim">
+          <pose>0 -6.90 0.16 0 0 0</pose>
+          <geometry><box><size>17.8 0.05 0.30</size></box></geometry>
+          <material><diffuse>0.16 0.19 0.22 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- L-shaped partitions create a service bay and non-trivial routes. -->
+    <model name="service_partitions">
+      <static>true</static>
+      <link name="partition_link">
+        <collision name="north_partition_collision">
+          <pose>3.0 4.20 1.10 0 0 0</pose>
+          <geometry><box><size>5.0 0.12 2.2</size></box></geometry>
+        </collision>
+        <visual name="north_partition_visual">
+          <pose>3.0 4.20 1.10 0 0 0</pose>
+          <geometry><box><size>5.0 0.12 2.2</size></box></geometry>
+          <material><diffuse>0.48 0.54 0.60 1</diffuse></material>
+        </visual>
+        <visual name="north_partition_stripe">
+          <pose>3.0 4.13 0.42 0 0 0</pose>
+          <geometry><box><size>4.8 0.02 0.18</size></box></geometry>
+          <material><diffuse>0.92 0.58 0.04 1</diffuse></material>
+        </visual>
+
+        <collision name="east_partition_collision">
+          <pose>5.50 2.20 1.10 0 0 0</pose>
+          <geometry><box><size>0.12 4.0 2.2</size></box></geometry>
+        </collision>
+        <visual name="east_partition_visual">
+          <pose>5.50 2.20 1.10 0 0 0</pose>
+          <geometry><box><size>0.12 4.0 2.2</size></box></geometry>
+          <material><diffuse>0.48 0.54 0.60 1</diffuse></material>
+        </visual>
+        <visual name="east_partition_stripe">
+          <pose>5.43 2.20 0.42 0 0 0</pose>
+          <geometry><box><size>0.02 3.8 0.18</size></box></geometry>
+          <material><diffuse>0.92 0.58 0.04 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Structural columns are separate obstacles visible to the LiDAR. -->
+    <model name="structural_columns">
+      <static>true</static>
+      <link name="column_link">
+        <collision name="column_1_collision">
+          <pose>-0.4 -2.2 1.25 0 0 0</pose>
+          <geometry><cylinder><radius>0.24</radius><length>2.5</length></cylinder></geometry>
+        </collision>
+        <visual name="column_1_visual">
+          <pose>-0.4 -2.2 1.25 0 0 0</pose>
+          <geometry><cylinder><radius>0.24</radius><length>2.5</length></cylinder></geometry>
+          <material><diffuse>0.25 0.28 0.31 1</diffuse></material>
+        </visual>
+        <visual name="column_1_guard">
+          <pose>-0.4 -2.2 0.35 0 0 0</pose>
+          <geometry><cylinder><radius>0.255</radius><length>0.70</length></cylinder></geometry>
+          <material><diffuse>0.95 0.64 0.04 1</diffuse></material>
+        </visual>
+
+        <collision name="column_2_collision">
+          <pose>-0.4 2.2 1.25 0 0 0</pose>
+          <geometry><cylinder><radius>0.24</radius><length>2.5</length></cylinder></geometry>
+        </collision>
+        <visual name="column_2_visual">
+          <pose>-0.4 2.2 1.25 0 0 0</pose>
+          <geometry><cylinder><radius>0.24</radius><length>2.5</length></cylinder></geometry>
+          <material><diffuse>0.25 0.28 0.31 1</diffuse></material>
+        </visual>
+        <visual name="column_2_guard">
+          <pose>-0.4 2.2 0.35 0 0 0</pose>
+          <geometry><cylinder><radius>0.255</radius><length>0.70</length></cylinder></geometry>
+          <material><diffuse>0.95 0.64 0.04 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Floor markings communicate a clockwise patrol loop and work zones. -->
+    <model name="floor_markings">
+      <static>true</static>
+      <link name="marking_link">
+        <visual name="south_lane">
+          <pose>0 -5.35 0.012 0 0 0</pose>
+          <geometry><box><size>15.2 0.06 0.018</size></box></geometry>
+          <material><diffuse>0.92 0.70 0.08 1</diffuse></material>
+        </visual>
+        <visual name="north_lane">
+          <pose>0 5.35 0.012 0 0 0</pose>
+          <geometry><box><size>15.2 0.06 0.018</size></box></geometry>
+          <material><diffuse>0.92 0.70 0.08 1</diffuse></material>
+        </visual>
+        <visual name="west_lane">
+          <pose>-7.55 0 0.012 0 0 0</pose>
+          <geometry><box><size>0.06 10.7 0.018</size></box></geometry>
+          <material><diffuse>0.92 0.70 0.08 1</diffuse></material>
+        </visual>
+        <visual name="east_lane">
+          <pose>7.55 0 0.012 0 0 0</pose>
+          <geometry><box><size>0.06 10.7 0.018</size></box></geometry>
+          <material><diffuse>0.92 0.70 0.08 1</diffuse></material>
+        </visual>
+        <visual name="storage_zone_marker">
+          <pose>-4.9 -3.55 0.014 0 0 0</pose>
+          <geometry><box><size>4.8 0.10 0.020</size></box></geometry>
+          <material><diffuse>0.08 0.56 0.76 1</diffuse></material>
+        </visual>
+        <visual name="equipment_zone_marker">
+          <pose>2.4 -3.55 0.014 0 0 0</pose>
+          <geometry><box><size>4.8 0.10 0.020</size></box></geometry>
+          <material><diffuse>0.10 0.72 0.42 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Reusable local models. -->
+    <include>
+      <uri>model://charging_station</uri>
+      <name>charging_station</name>
+      <pose>-8.35 -5.85 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>model://warehouse_shelf</uri>
+      <name>storage_shelf_west</name>
+      <pose>-6.0 0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://warehouse_shelf</uri>
+      <name>storage_shelf_east</name>
+      <pose>-3.8 0 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>model://workbench</uri>
+      <name>workbench_south</name>
+      <pose>2.2 -2.35 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://workbench</uri>
+      <name>workbench_north</name>
+      <pose>2.2 2.35 0 0 0 3.14159</pose>
+    </include>
+
+    <!-- Three copies of the future YOLO target, facing accessible space. -->
+    <include>
+      <uri>model://inspection_panel</uri>
+      <name>inspection_panel_east_south</name>
+      <pose>8.55 -3.45 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://inspection_panel</uri>
+      <name>inspection_panel_east_north</name>
+      <pose>8.55 2.75 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://inspection_panel</uri>
+      <name>inspection_panel_north</name>
+      <pose>1.25 6.55 0 0 0 -1.5708</pose>
+    </include>
+
+    <!-- Ordinary crates plus red distractors for later perception tests. -->
+    <include>
+      <uri>model://storage_crate</uri>
+      <name>crate_storage_1</name>
+      <pose>-7.65 2.65 0 0 0 0.20</pose>
+    </include>
+    <include>
+      <uri>model://storage_crate</uri>
+      <name>crate_storage_2</name>
+      <pose>-2.05 -1.10 0 0 0 -0.35</pose>
+    </include>
+    <include>
+      <uri>model://storage_crate</uri>
+      <name>crate_service_1</name>
+      <pose>6.55 1.05 0 0 0 0.35</pose>
+    </include>
+    <include>
+      <uri>model://red_storage_crate</uri>
+      <name>red_distractor_south</name>
+      <pose>0.15 -4.35 0 0 0 0.15</pose>
+    </include>
+    <include>
+      <uri>model://red_storage_crate</uri>
+      <name>red_distractor_north</name>
+      <pose>6.65 5.55 0 0 0 -0.25</pose>
+    </include>
+  </world>
+</sdf>

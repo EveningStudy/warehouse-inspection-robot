@@ -1,0 +1,67 @@
+patrol_node:
+  ros__parameters:
+    wait_seconds: 2.0
+    waypoint_file: ""
+
+    # Coordinates are in the saved inspection_warehouse_map frame. They are
+    # deliberately placed in open space, not on the inspection-panel surfaces.
+    waypoints:
+      - name: "Charging area"
+        x: -7.45
+        y: -5.85
+        yaw: 0.0
+      - name: "South corridor"
+        x: -3.95
+        y: -5.60
+        yaw: 0.0
+      - name: "East south corridor"
+        x: 7.25
+        y: -5.60
+        yaw: 1.5708
+      - name: "East service bay"
+        x: 6.25
+        y: 2.00
+        yaw: 0.0
+      # Stand in clear space south of the north inspection panel and face it.
+      # The previous (0.15, 6.35) goal was only about 0.08 m from an occupied
+      # map cell, so the robot could approach it but could never satisfy the
+      # final Nav2 position and orientation tolerances.
+      - name: "North inspection area"
+        x: 1.25
+        y: 5.50
+        yaw: 1.5708
+      - name: "West outer aisle"
+        x: -6.90
+        y: 3.65
+        yaw: -1.5708
+      - name: "Shelf aisle entrance"
+        x: -4.90
+        y: 3.00
+        yaw: 0.0
+      - name: "Shelf aisle centre"
+        x: -2.70
+        y: 3.00
+        yaw: 0.0
+      - name: "Workbench south"
+        x: 3.00
+        y: -3.40
+        yaw: 0.0
+      - name: "Workbench north"
+        x: 3.00
+        y: 1.90
+        yaw: 1.5708
+      # The saved SLAM map understates the physical footprint of the south
+      # workbench.  These gates keep the return route on its open east side
+      # before joining the wide southern corridor.
+      - name: "Workbench east bypass"
+        x: 4.50
+        y: 0.00
+        yaw: -1.5708
+      - name: "South return lane"
+        x: 4.50
+        y: -4.60
+        yaw: 3.1416
+      - name: "Return to charging area"
+        x: -7.45
+        y: -5.85
+        yaw: 3.1416

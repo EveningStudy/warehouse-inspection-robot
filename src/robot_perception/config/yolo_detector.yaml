@@ -1,0 +1,16 @@
+yolo_target_detector_node:
+  ros__parameters:
+    confidence_threshold: 0.45
+    image_size: 640
+    device: "0"
+    maximum_detections: 5
+    maximum_inference_rate: 5.0
+    target_frame: "map"
+    camera_frame_fallback: "camera_optical_link"
+    rgb_topic: "/camera/image"
+    depth_topic: "/camera/depth_image"
+    camera_info_topic: "/camera/camera_info"
+    minimum_depth: 0.15
+    maximum_depth: 8.0
+    depth_roi_fraction: 0.35
+    minimum_depth_samples: 6

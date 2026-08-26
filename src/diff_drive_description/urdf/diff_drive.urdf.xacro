@@ -1,0 +1,560 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+  name="diff_drive_robot">
+
+  <!--
+    The semantic camera is only needed while producing synthetic training
+    data.  Keeping it behind a Xacro argument avoids paying its rendering cost
+    during ordinary navigation and perception runs.
+  -->
+  <xacro:arg name="enable_dataset_camera" default="false" />
+
+  <!-- Chassis dimensions, in metres -->
+  <xacro:property name="base_length" value="0.6" />
+  <xacro:property name="base_width" value="0.4" />
+  <xacro:property name="base_height" value="0.2" />
+  <xacro:property name="base_mass" value="5.0" />
+  <xacro:property name="ground_clearance" value="0.03" />
+
+  <!-- Wheel dimensions, in metres -->
+  <xacro:property name="wheel_radius" value="0.1" />
+  <xacro:property name="wheel_width" value="0.05" />
+  <xacro:property name="wheel_mass" value="0.5" />
+
+  <!-- Rear ball caster -->
+  <xacro:property name="caster_radius" value="0.05" />
+  <xacro:property name="caster_mass" value="0.2" />
+  <xacro:property name="caster_x_offset" value="-0.30" />
+
+  <!-- Distance from the robot centre to each wheel centre -->
+  <xacro:property
+    name="wheel_y_offset"
+    value="${base_width / 2.0 + wheel_width / 2.0}" />
+
+  <!-- 2D lidar dimensions -->
+  <xacro:property name="lidar_radius" value="0.05" />
+  <xacro:property name="lidar_height" value="0.08" />
+  <xacro:property name="lidar_mass" value="0.2" />
+  <xacro:property name="lidar_x_offset" value="0.15" />
+
+  <!-- Reusable colours -->
+  <material name="blue">
+    <color rgba="0.1 0.4 0.8 1.0" />
+  </material>
+
+  <material name="dark_grey">
+    <color rgba="0.1 0.1 0.1 1.0" />
+  </material>
+
+  <material name="yellow">
+    <color rgba="1.0 0.8 0.0 1.0" />
+  </material>
+
+  <material name="lidar_green">
+    <color rgba="0.1 0.8 0.2 1.0" />
+  </material>
+
+  <!-- Ground reference frame -->
+  <link name="base_footprint" />
+
+  <!-- Main chassis -->
+  <link name="base_link">
+
+    <!-- What the robot looks like -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_height}" />
+      </geometry>
+
+      <material name="blue" />
+    </visual>
+
+    <!-- Shape used by the physics engine for collisions -->
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_height}" />
+      </geometry>
+    </collision>
+
+    <!-- Mass and mass distribution -->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <mass value="${base_mass}" />
+
+      <inertia
+        ixx="${base_mass * (base_width * base_width + base_height * base_height) / 12.0}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${base_mass * (base_length * base_length + base_height * base_height) / 12.0}"
+        iyz="0.0"
+        izz="${base_mass * (base_length * base_length + base_width * base_width) / 12.0}" />
+    </inertial>
+
+  </link>
+
+  <!-- Place the chassis centre above the ground -->
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_footprint" />
+    <child link="base_link" />
+    <origin
+      xyz="0 0 ${ground_clearance + base_height / 2.0}"
+      rpy="0 0 0" />
+  </joint>
+
+  <!--
+    Define one reusable wheel template.
+
+    prefix:
+      Creates names such as left_wheel_link and right_wheel_link.
+
+    y_position:
+      Places the wheel on the left or right side.
+  -->
+  <xacro:macro name="wheel" params="prefix y_position">
+
+    <link name="${prefix}_wheel_link">
+
+      <!-- Main cylindrical wheel -->
+      <visual>
+        <origin xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+
+        <geometry>
+          <cylinder
+            radius="${wheel_radius}"
+            length="${wheel_width}" />
+        </geometry>
+
+        <material name="dark_grey" />
+      </visual>
+
+      <!--
+        A yellow marker makes rotation visible.
+        A plain cylinder looks identical after rotating.
+      -->
+      <visual>
+        <origin
+          xyz="${wheel_radius * 0.7} 0 0"
+          rpy="0 0 0" />
+
+        <geometry>
+          <box
+            size="0.03 ${wheel_width + 0.01} 0.03" />
+        </geometry>
+
+        <material name="yellow" />
+      </visual>
+
+      <!-- Cylindrical collision shape -->
+      <collision>
+        <origin xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+
+        <geometry>
+          <cylinder
+            radius="${wheel_radius}"
+            length="${wheel_width}" />
+        </geometry>
+      </collision>
+
+      <!--
+        Inertia of a solid cylinder whose rotation axis is Y.
+      -->
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+
+        <mass value="${wheel_mass}" />
+
+        <inertia
+          ixx="${wheel_mass * (3.0 * wheel_radius * wheel_radius + wheel_width * wheel_width) / 12.0}"
+          ixy="0.0"
+          ixz="0.0"
+          iyy="${wheel_mass * wheel_radius * wheel_radius / 2.0}"
+          iyz="0.0"
+          izz="${wheel_mass * (3.0 * wheel_radius * wheel_radius + wheel_width * wheel_width) / 12.0}" />
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link" />
+      <child link="${prefix}_wheel_link" />
+
+      <origin
+        xyz="0 ${y_position} ${wheel_radius - (ground_clearance + base_height / 2.0)}"
+        rpy="0 0 0" />
+
+      <axis xyz="0 1 0" />
+    </joint>
+
+  </xacro:macro>
+
+  <!-- Create the left wheel from the template -->
+  <xacro:wheel
+    prefix="left"
+    y_position="${wheel_y_offset}" />
+
+  <!-- Create the right wheel from the same template -->
+  <xacro:wheel
+    prefix="right"
+    y_position="${-wheel_y_offset}" />
+  <!-- Rear ball caster used to support the chassis -->
+  <link name="caster_link">
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <geometry>
+        <sphere radius="${caster_radius}" />
+      </geometry>
+
+      <material name="dark_grey" />
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <geometry>
+        <sphere radius="${caster_radius}" />
+      </geometry>
+    </collision>
+
+    <!-- Inertia of a solid sphere -->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <mass value="${caster_mass}" />
+
+      <inertia
+        ixx="${2.0 * caster_mass * caster_radius * caster_radius / 5.0}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${2.0 * caster_mass * caster_radius * caster_radius / 5.0}"
+        iyz="0.0"
+        izz="${2.0 * caster_mass * caster_radius * caster_radius / 5.0}" />
+    </inertial>
+
+  </link>
+
+  <joint name="caster_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="caster_link" />
+
+    <origin
+      xyz="${caster_x_offset} 0 ${caster_radius - (ground_clearance + base_height / 2.0)}"
+      rpy="0 0 0" />
+  </joint>
+
+  <!--
+    The rear support is a fixed ball rather than a true swivel caster. Give it
+    very low friction so it can slide during turns instead of forcing the drive
+    wheels to scrub and corrupt wheel odometry.
+  -->
+  <gazebo reference="caster_link">
+    <mu1>0.01</mu1>
+    <mu2>0.01</mu2>
+  </gazebo>
+
+  <!-- Drive wheels retain high traction in both contact directions. -->
+  <gazebo reference="left_wheel_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+
+  <gazebo reference="right_wheel_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+
+  <!-- 2D lidar body -->
+  <link name="lidar_link">
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <geometry>
+        <cylinder
+          radius="${lidar_radius}"
+          length="${lidar_height}" />
+      </geometry>
+
+      <material name="lidar_green" />
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <geometry>
+        <cylinder
+          radius="${lidar_radius}"
+          length="${lidar_height}" />
+      </geometry>
+    </collision>
+
+    <!-- Inertia of a solid cylinder whose axis is Z -->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <mass value="${lidar_mass}" />
+
+      <inertia
+        ixx="${lidar_mass * (3.0 * lidar_radius * lidar_radius + lidar_height * lidar_height) / 12.0}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${lidar_mass * (3.0 * lidar_radius * lidar_radius + lidar_height * lidar_height) / 12.0}"
+        iyz="0.0"
+        izz="${lidar_mass * lidar_radius * lidar_radius / 2.0}" />
+    </inertial>
+
+  </link>
+
+  <!-- Mount the lidar on top of the chassis -->
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="lidar_link" />
+
+    <origin
+      xyz="${lidar_x_offset} 0 ${base_height / 2.0 + lidar_height / 2.0}"
+      rpy="0 0 0" />
+  </joint>
+
+  <!-- RGB-D camera body -->
+  <link name="camera_link">
+
+    <!--
+      This box is only the visible camera housing.
+      The actual image is generated by the Gazebo sensor below.
+    -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <geometry>
+        <box size="0.06 0.12 0.05" />
+      </geometry>
+
+      <material name="dark_grey" />
+    </visual>
+
+  </link>
+
+  <!-- Mount the camera near the front of the chassis -->
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="camera_link" />
+
+    <origin
+      xyz="${base_length / 2.0 - 0.06} 0 ${base_height / 2.0 + 0.06}"
+      rpy="0 0 0" />
+  </joint>
+
+  <!--
+    ROS camera optical coordinate frame:
+
+      +X points right in the image
+      +Y points down in the image
+      +Z points forward through the lens
+
+    camera_link itself follows the normal robot convention:
+
+      +X forward
+      +Y left
+      +Z up
+  -->
+  <link name="camera_optical_link" />
+
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link" />
+    <child link="camera_optical_link" />
+
+    <origin
+      xyz="0 0 0"
+      rpy="${-pi / 2.0} 0 ${-pi / 2.0}" />
+  </joint>
+
+  <!-- Actual simulated RGB-D sensor -->
+  <gazebo reference="camera_link">
+
+    <sensor name="rgbd_camera" type="rgbd_camera">
+
+      <!--
+        This is the base topic name.
+        Gazebo will publish subtopics such as:
+
+          /camera/image
+          /camera/depth_image
+          /camera/camera_info
+      -->
+      <topic>/camera</topic>
+
+      <!-- Frame written into the sensor messages -->
+      <gz_frame_id>camera_optical_link</gz_frame_id>
+
+      <!-- Generate ten RGB/depth frames per second -->
+      <update_rate>10</update_rate>
+
+      <camera>
+
+        <!-- Horizontal field of view: about 60 degrees -->
+        <horizontal_fov>1.0472</horizontal_fov>
+
+        <image>
+          <width>320</width>
+          <height>240</height>
+          <format>R8G8B8</format>
+        </image>
+
+        <!--
+          Objects closer than 0.15 m or farther than 8 m
+          are outside the usable camera range.
+        -->
+        <clip>
+          <near>0.15</near>
+          <far>8.0</far>
+        </clip>
+
+        <optical_frame_id>
+          camera_optical_link
+        </optical_frame_id>
+
+      </camera>
+
+      <always_on>true</always_on>
+
+      <!-- Show the camera frustum inside Gazebo -->
+      <visualize>true</visualize>
+
+    </sensor>
+
+    <xacro:if value="$(arg enable_dataset_camera)">
+      <!--
+        Co-located with the RGB-D camera and configured with the same field of
+        view, resolution and clipping planes.  Label 1 is reserved for the
+        inspection_panel model.  Gazebo publishes both a label map and a
+        coloured visualization map below the /camera/segmentation namespace.
+      -->
+      <sensor name="dataset_segmentation_camera" type="segmentation">
+        <topic>/camera/segmentation</topic>
+        <gz_frame_id>camera_optical_link</gz_frame_id>
+        <update_rate>10</update_rate>
+
+        <camera>
+          <segmentation_type>semantic</segmentation_type>
+          <horizontal_fov>1.0472</horizontal_fov>
+
+          <image>
+            <width>320</width>
+            <height>240</height>
+          </image>
+
+          <clip>
+            <near>0.15</near>
+            <far>8.0</far>
+          </clip>
+
+          <optical_frame_id>
+            camera_optical_link
+          </optical_frame_id>
+        </camera>
+
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+      </sensor>
+    </xacro:if>
+
+  </gazebo>
+
+  <!-- Gazebo GPU lidar sensor -->
+  <gazebo reference="lidar_link">
+
+    <sensor name="gpu_lidar" type="gpu_lidar">
+
+      <topic>/scan</topic>
+      <gz_frame_id>lidar_link</gz_frame_id>
+      <update_rate>10</update_rate>
+
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-${pi}</min_angle>
+            <max_angle>${pi}</max_angle>
+          </horizontal>
+        </scan>
+
+        <range>
+          <min>0.12</min>
+          <max>12.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </lidar>
+
+      <alwaysOn>1</alwaysOn>
+      <visualize>true</visualize>
+
+    </sensor>
+
+  </gazebo>
+
+  <!-- Gazebo differential-drive controller -->
+  <gazebo>
+    <plugin
+      filename="gz-sim-diff-drive-system"
+      name="gz::sim::systems::DiffDrive">
+
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+
+      <wheel_separation>${2.0 * wheel_y_offset}</wheel_separation>
+      <wheel_radius>${wheel_radius}</wheel_radius>
+
+      <odom_publish_frequency>30</odom_publish_frequency>
+
+      <max_linear_acceleration>1.0</max_linear_acceleration>
+      <min_linear_acceleration>-1.0</min_linear_acceleration>
+
+      <max_angular_acceleration>2.0</max_angular_acceleration>
+      <min_angular_acceleration>-2.0</min_angular_acceleration>
+
+      <max_linear_velocity>0.5</max_linear_velocity>
+      <min_linear_velocity>-0.5</min_linear_velocity>
+
+      <max_angular_velocity>1.5</max_angular_velocity>
+      <min_angular_velocity>-1.5</min_angular_velocity>
+
+    </plugin>
+  </gazebo>
+
+  <!--
+    Gazebo ground-truth odometry is kept on a separate topic.  It is used only
+    by repeatable simulation test and mapping-route helpers; SLAM and Nav2 keep
+    using the wheel-derived /odom path so the autonomy stack remains realistic.
+  -->
+  <gazebo>
+    <plugin
+      filename="gz-sim-odometry-publisher-system"
+      name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>world</odom_frame>
+      <robot_base_frame>base_footprint</robot_base_frame>
+      <odom_publish_frequency>30</odom_publish_frequency>
+      <odom_topic>
+        /model/diff_drive_robot/ground_truth_odometry
+      </odom_topic>
+      <tf_topic>
+        /model/diff_drive_robot/ground_truth_pose
+      </tf_topic>
+      <dimensions>2</dimensions>
+    </plugin>
+  </gazebo>
+
+  <!-- Publish simulated joint positions inside Gazebo -->
+  <gazebo>
+    <plugin
+      filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher" />
+  </gazebo>
+
+</robot>

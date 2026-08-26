@@ -1,0 +1,17 @@
+build/
+install/
+log/
+.venv*/
+.pytest_cache/
+**/.pytest_cache/
+**/__pycache__/
+*.py[cod]
+
+datasets/
+runs/
+inspection_records/
+weights/
+yolo26n.pt
+
+*.data
+*.posegraph

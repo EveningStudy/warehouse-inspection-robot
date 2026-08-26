@@ -1,0 +1,235 @@
+<?xml version="1.0"?>
+
+<sdf version="1.9">
+
+  <world name="robot_world">
+
+    <!-- Physics configuration -->
+    <physics name="default_physics" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <!-- Required Gazebo systems -->
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics"/>
+
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands"/>
+
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster"/>
+
+    <!-- Scene appearance -->
+    <scene>
+      <ambient>0.4 0.4 0.4 1.0</ambient>
+      <background>0.1 0.1 0.1 1.0</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <!-- Directional sunlight -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+
+      <diffuse>0.8 0.8 0.8 1.0</diffuse>
+      <specular>0.2 0.2 0.2 1.0</specular>
+
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Static ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+
+      <link name="ground_link">
+
+        <collision name="ground_collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+
+        <visual name="ground_visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+
+          <material>
+            <ambient>0.5 0.5 0.5 1.0</ambient>
+            <diffuse>0.7 0.7 0.7 1.0</diffuse>
+            <specular>0.1 0.1 0.1 1.0</specular>
+          </material>
+        </visual>
+
+      </link>
+    </model>
+
+    <!-- Test obstacle for the lidar -->
+    <model name="test_obstacle">
+      <static>true</static>
+
+      <pose>2.0 0 0.5 0 0 0</pose>
+
+      <link name="obstacle_link">
+
+        <collision name="obstacle_collision">
+          <geometry>
+            <box>
+              <size>0.5 1.0 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="obstacle_visual">
+          <geometry>
+            <box>
+              <size>0.5 1.0 1.0</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>0.8 0.2 0.1 1.0</ambient>
+            <diffuse>0.9 0.3 0.1 1.0</diffuse>
+          </material>
+        </visual>
+
+      </link>
+    </model>
+        <!-- Four walls forming an 8 m x 8 m room -->
+    <model name="room_walls">
+      <static>true</static>
+
+      <link name="walls_link">
+
+        <!-- North wall: horizontal wall at y = 4 -->
+        <collision name="north_wall_collision">
+          <pose>0 4 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>8.1 0.1 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="north_wall_visual">
+          <pose>0 4 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>8.1 0.1 1.0</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.85 0.85 0.85 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- South wall: horizontal wall at y = -4 -->
+        <collision name="south_wall_collision">
+          <pose>0 -4 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>8.1 0.1 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="south_wall_visual">
+          <pose>0 -4 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>8.1 0.1 1.0</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.85 0.85 0.85 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- East wall: vertical wall at x = 4 -->
+        <collision name="east_wall_collision">
+          <pose>4 0 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>0.1 8.1 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="east_wall_visual">
+          <pose>4 0 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>0.1 8.1 1.0</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.85 0.85 0.85 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- West wall: vertical wall at x = -4 -->
+        <collision name="west_wall_collision">
+          <pose>-4 0 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>0.1 8.1 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="west_wall_visual">
+          <pose>-4 0 0.5 0 0 0</pose>
+
+          <geometry>
+            <box>
+              <size>0.1 8.1 1.0</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.85 0.85 0.85 1.0</diffuse>
+          </material>
+        </visual>
+
+      </link>
+    </model>
+  </world>
+
+</sdf>

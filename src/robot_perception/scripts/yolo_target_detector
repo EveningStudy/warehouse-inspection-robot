@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+if [[ -n "${ROBOT_WS:-}" ]]; then
+  workspace="$ROBOT_WS"
+else
+  package_prefix="$(ros2 pkg prefix robot_perception)"
+  workspace="$(cd "$package_prefix/../.." && pwd)"
+fi
+venv="${YOLO_VENV:-$workspace/.venv-yolo}"
+
+if [[ ! -x "$venv/bin/python" ]]; then
+  echo "YOLO Python environment not found: $venv" >&2
+  exit 2
+fi
+
+exec "$venv/bin/python" -m robot_perception.yolo_target_detector_node "$@"

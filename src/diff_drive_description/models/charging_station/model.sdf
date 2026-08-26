@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="charging_station">
+    <static>true</static>
+    <link name="dock_link">
+      <!-- Thin floor pad is visual-only so the robot can drive over it. -->
+      <visual name="floor_pad">
+        <pose>0.75 0 0.008 0 0 0</pose>
+        <geometry><box><size>1.5 1.2 0.016</size></box></geometry>
+        <material><diffuse>0.06 0.22 0.31 1</diffuse></material>
+      </visual>
+      <visual name="left_guide">
+        <pose>0.72 0.55 0.025 0 0 0</pose>
+        <geometry><box><size>1.45 0.05 0.025</size></box></geometry>
+        <material><diffuse>0.05 0.78 0.92 1</diffuse></material>
+      </visual>
+      <visual name="right_guide">
+        <pose>0.72 -0.55 0.025 0 0 0</pose>
+        <geometry><box><size>1.45 0.05 0.025</size></box></geometry>
+        <material><diffuse>0.05 0.78 0.92 1</diffuse></material>
+      </visual>
+
+      <collision name="dock_back_collision">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><box><size>0.20 1.10 0.90</size></box></geometry>
+      </collision>
+      <visual name="dock_back">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><box><size>0.20 1.10 0.90</size></box></geometry>
+        <material><diffuse>0.13 0.16 0.20 1</diffuse></material>
+      </visual>
+      <visual name="dock_screen">
+        <pose>0.105 0 0.60 0 0 0</pose>
+        <geometry><box><size>0.015 0.55 0.25</size></box></geometry>
+        <material>
+          <diffuse>0.02 0.70 0.82 1</diffuse>
+          <emissive>0.01 0.22 0.28 1</emissive>
+        </material>
+      </visual>
+      <visual name="charge_contact_left">
+        <pose>0.115 0.22 0.25 0 0 0</pose>
+        <geometry><box><size>0.025 0.16 0.16</size></box></geometry>
+        <material><diffuse>0.82 0.62 0.10 1</diffuse></material>
+      </visual>
+      <visual name="charge_contact_right">
+        <pose>0.115 -0.22 0.25 0 0 0</pose>
+        <geometry><box><size>0.025 0.16 0.16</size></box></geometry>
+        <material><diffuse>0.82 0.62 0.10 1</diffuse></material>
+      </visual>
+    </link>
+  </model>
+</sdf>

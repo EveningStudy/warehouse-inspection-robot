@@ -1,0 +1,96 @@
+patrol_node:
+  ros__parameters:
+    # This route deliberately mixes positive views of all three inspection
+    # panels with ordinary shelves, workbenches and red distractor crates.
+    # Coordinates are in the saved inspection_warehouse_map frame.
+    waypoints:
+      - name: "Dataset start"
+        x: -7.45
+        y: -5.85
+        yaw: 0.0
+
+      # Negative example: a red crate, proving that colour alone is not the
+      # inspection-panel class.
+      - name: "South red distractor view"
+        x: -1.25
+        y: -5.75
+        yaw: 0.79
+
+      # Three safe perspectives of the east-south inspection panel.
+      - name: "East-south panel lower view"
+        x: 5.80
+        y: -4.20
+        yaw: 0.27
+      - name: "East-south panel centre view"
+        x: 5.80
+        y: -3.45
+        yaw: 0.0
+      - name: "East-south panel upper view"
+        x: 5.80
+        y: -2.70
+        yaw: -0.27
+
+      # Three perspectives of the east-north inspection panel.
+      - name: "East-north panel lower view"
+        x: 6.05
+        y: 1.25
+        yaw: 0.54
+      - name: "East-north panel centre view"
+        x: 5.80
+        y: 2.00
+        yaw: 0.27
+      - name: "East-north panel upper view"
+        x: 6.05
+        y: 4.25
+        yaw: -0.54
+
+      # Negative example close to the north red distractor.
+      - name: "North red distractor view"
+        x: 5.00
+        y: 4.30
+        yaw: 0.65
+
+      # Sweep across the north panel so it appears at different horizontal
+      # image positions and viewing angles.
+      - name: "North panel right view"
+        x: 2.10
+        y: 5.40
+        yaw: 2.21
+      - name: "North panel centre view"
+        x: 1.25
+        y: 5.50
+        yaw: 1.57
+      - name: "North panel left view"
+        x: 0.40
+        y: 5.40
+        yaw: 0.93
+
+      # Additional warehouse-only negatives for background diversity.
+      - name: "West outer aisle negative"
+        x: -6.90
+        y: 3.65
+        yaw: -1.57
+      - name: "Shelf entrance negative"
+        x: -4.90
+        y: 3.00
+        yaw: 0.0
+      - name: "Shelf centre negative"
+        x: -2.70
+        y: 3.00
+        yaw: 0.0
+      - name: "Workbench negative"
+        x: 3.00
+        y: -3.40
+        yaw: 0.0
+      - name: "Workbench east bypass"
+        x: 4.50
+        y: 0.00
+        yaw: -1.57
+      - name: "South return lane"
+        x: 4.50
+        y: -4.60
+        yaw: 3.14
+      - name: "Dataset return home"
+        x: -7.45
+        y: -5.85
+        yaw: 3.14

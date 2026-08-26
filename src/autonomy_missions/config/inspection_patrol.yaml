@@ -1,0 +1,27 @@
+inspection_patrol_node:
+  ros__parameters:
+    map_profile: "warehouse"
+    wait_seconds: 1.5
+    standoff_distance: 0.9
+    inspection_seconds: 3.0
+
+    # A single frame must never stop the robot. The same map-space panel must
+    # be seen three times, within this radius and timeout, before interruption.
+    confirmation_count: 3
+    confirmation_radius: 0.45
+    confirmation_timeout: 2.0
+
+    # A handled panel inside this map-space radius is not approached again.
+    deduplication_radius: 1.5
+    target_frame: "map"
+    robot_base_frame: "base_footprint"
+    detection_topic: "/perception/yolo_detections"
+
+    waypoint_timeout_seconds: 120.0
+    approach_timeout_seconds: 90.0
+    max_retries_per_waypoint: 1
+    continue_on_waypoint_failure: true
+    max_goal_rejection_retries: 30
+    goal_rejection_retry_seconds: 1.0
+    feedback_log_interval_seconds: 3.0
+    maximum_tf_retries: 20
