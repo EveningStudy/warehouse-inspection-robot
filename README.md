@@ -1,8 +1,6 @@
 # ROS 2 Warehouse Inspection Robot
 
-A mobile robot that patrols a Gazebo warehouse, spots inspection panels with
-YOLO, drives closer and records each visit before continuing its route.
-Built with ROS 2 Jazzy and Nav2.
+A mobile robot that patrols a Gazebo warehouse, spots inspection panels with YOLO, drives closer and records each visit before continuing its route. Built with ROS 2 Jazzy and Nav2.
 
 ![Recorded warehouse inspection](assets/warehouse-inspection-demo.gif)
 
@@ -64,8 +62,7 @@ source install/setup.bash
 ros2 launch robot_perception inspection_patrol.launch.py
 ```
 
-Gazebo, RViz and the annotated camera view will open. Mission results are
-written to `~/.ros/autonomy_lab/inspection_records`.
+Gazebo, RViz and the annotated camera view will open. Mission results are written to `~/.ros/autonomy_lab/inspection_records`.
 
 To run with the windows closed:
 
