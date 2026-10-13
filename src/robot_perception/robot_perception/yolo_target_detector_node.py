@@ -131,7 +131,9 @@ class YoloTargetDetectorNode(Node):
         self.synchronizer = message_filters.ApproximateTimeSynchronizer(
             [self.rgb_subscription, self.depth_subscription],
             queue_size=5,
-            slop=0.1,
+            # At 10 Hz, 0.1 s can pair neighbouring RGB/depth frames while the
+            # robot is turning. These streams come from one Gazebo RGB-D sensor.
+            slop=0.02,
         )
         self.synchronizer.registerCallback(self.rgbd_callback)
 
@@ -400,8 +402,11 @@ class YoloTargetDetectorNode(Node):
             transform = self.tf_buffer.lookup_transform(
                 self.target_frame,
                 point_in_camera.header.frame_id,
-                Time(),
-                timeout=Duration(seconds=0.2),
+                # Transform at exposure time, not the robot's pose after YOLO
+                # inference. Using latest TF displaces distant panels during
+                # turns and can defeat spatial deduplication / approach goals.
+                Time.from_msg(rgb_message.header.stamp),
+                timeout=Duration(seconds=0.0),
             )
             point_in_target = do_transform_point(
                 point_in_camera,

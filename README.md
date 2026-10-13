@@ -1,29 +1,30 @@
 # ROS 2 Warehouse Inspection Robot
 
-A ROS 2 Jazzy simulation of an autonomous warehouse inspection robot. The
-robot navigates a Gazebo warehouse with Nav2, patrols a fixed route, detects
-inspection panels with a custom YOLO model, approaches confirmed targets,
-records the result, and resumes its patrol.
+A mobile robot that patrols a Gazebo warehouse, spots inspection panels with
+YOLO, drives closer and records each visit before continuing its route.
+Built with ROS 2 Jazzy and Nav2.
 
-| Gazebo warehouse | YOLO panel detection |
-| --- | --- |
-| ![Gazebo warehouse](assets/gazebo_warehouse.png) | ![YOLO panel detection](assets/yolo_detection.jpg) |
+![Recorded warehouse inspection](assets/warehouse-inspection-demo.gif)
+
+The demo shows one panel approach and the return to patrol. Left: recorded robot
+position. Right: the camera feed with YOLO detections. A continuous 25-second
+clip at 1.1× simulation speed.
 
 ## Features
 
 - Differential-drive robot with lidar and an RGB-D camera
-- Warehouse simulation, saved map, AMCL localization and Nav2 navigation
-- Automatic synthetic YOLO dataset generation using Gazebo segmentation labels
-- GPU YOLO inference with RGB-D target localization in the map frame
-- Patrol interruption, target approach, inspection logging and patrol recovery
-- One launch file for the complete simulation
+- Saved warehouse map, AMCL localisation and Nav2 navigation
+- YOLO training images generated from Gazebo, with automatic labels
+- GPU detection and depth-based panel localisation
+- Patrol, panel approach, visit logging and route recovery
+- One launch command for the simulation, navigation and detector
 
 ```text
 Patrol -> Detect panel -> Confirm target -> Pause patrol
        -> Approach panel -> Record result -> Resume patrol
 ```
 
-The repository contains three ROS 2 packages:
+## Packages
 
 - `diff_drive_description`: robot model, sensors, Gazebo worlds, maps and Nav2 configuration.
 - `robot_perception`: synthetic dataset collection and RGB-D YOLO detection.
@@ -66,9 +67,45 @@ ros2 launch robot_perception inspection_patrol.launch.py
 Gazebo, RViz and the annotated camera view will open. Mission results are
 written to `~/.ros/autonomy_lab/inspection_records`.
 
-The included detector was trained only on synthetic images from this warehouse
-and recognizes one class: `inspection_panel`. This is a simulation project, not
-a real-world safety or inspection system.
+To run with the windows closed:
+
+```bash
+ros2 launch robot_perception inspection_patrol.launch.py \
+  headless:=true use_rviz:=false show_debug_image:=false
+```
+
+## Test results
+
+The latest test used 20 fresh simulation launches in the same warehouse,
+using ROS 2 Jazzy in WSL2, with up to two simulations running at once.
+
+| Measure | Result |
+|---|---:|
+| Complete missions | 19/20 (95%) |
+| Complete patrol routes | 19/20 (95%) |
+| Recorded panel approaches | 62/62 |
+
+A complete mission reaches all 13 waypoints, completes at least one panel
+approach and finishes with every approach successful. Every failed launch
+counts in the totals above.
+
+Nineteen missions passed with no skipped waypoints or manual intervention.
+One launch timed out during startup while waiting for the robot description
+and Nav2 services. It counts as a failed mission.
+Velocity commands use a separate ROS–Gazebo bridge, started after robot spawning.
+These results cover one fixed warehouse scene; varied scenes still need testing.
+
+[Full test conditions and individual results](docs/validation-2026-10-13/README.md).
+
+## Current scope
+
+The detector recognises one class, `inspection_panel`, and was trained on
+synthetic images from this warehouse. Navigation uses Gazebo ground-truth
+odometry together with AMCL.
+
+The robot records whether it reached each selected approach goal. It can count
+the same physical panel more than once when position estimates drift. Defect
+detection, unique-panel coverage and real-world testing remain future work.
 
 ## License
 

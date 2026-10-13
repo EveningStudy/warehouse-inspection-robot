@@ -1,0 +1,10 @@
+{
+  "source": "/home/chris/project/robot-validation-2026-10-13/final_tuned/warehouse/trial_11",
+  "source_sim_start": 37.216,
+  "source_sim_end": 64.51599999999999,
+  "playback_speed": 1.0919999999999996,
+  "timebase": "simulation",
+  "continuous": true,
+  "note": "A successful approach excerpt, not a claim of complete mission or unique-panel coverage.",
+  "gif_sha256": "e9ac16fcf22a5bc1e261975c2b5515711486f2e6ec20aab6423ca438073e9dff"
+}

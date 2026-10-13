@@ -8,9 +8,11 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
     OpaqueFunction,
+    RegisterEventHandler,
     SetEnvironmentVariable,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.event_handlers import OnProcessExit
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -139,11 +141,6 @@ def _launch_setup(context, package_share, ros_gz_sim_share):
         arguments=[
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             (
-                "/model/diff_drive_robot/cmd_vel"
-                "@geometry_msgs/msg/Twist]"
-                "gz.msgs.Twist"
-            ),
-            (
                 "/model/diff_drive_robot/odometry"
                 "@nav_msgs/msg/Odometry["
                 "gz.msgs.Odometry"
@@ -182,7 +179,6 @@ def _launch_setup(context, package_share, ros_gz_sim_share):
             ),
         ],
         remappings=[
-            ("/model/diff_drive_robot/cmd_vel", "/cmd_vel"),
             ("/model/diff_drive_robot/odometry", "/gz_odom"),
             (
                 "/model/diff_drive_robot/ground_truth_odometry",
@@ -190,6 +186,22 @@ def _launch_setup(context, package_share, ros_gz_sim_share):
             ),
             (joint_state_topic, "/joint_states"),
         ],
+    )
+
+    # Keep command callbacks independent of RGB-D traffic. Start this bridge
+    # after spawning so the DiffDrive transport subscriber already exists.
+    command_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        name="command_bridge",
+        output="screen",
+        arguments=[
+            "/model/diff_drive_robot/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
+        ],
+        remappings=[("/model/diff_drive_robot/cmd_vel", "/cmd_vel")],
+    )
+    command_bridge_after_spawn = RegisterEventHandler(
+        OnProcessExit(target_action=spawn_robot, on_exit=[command_bridge])
     )
 
     odom_adapter = Node(
@@ -229,6 +241,7 @@ def _launch_setup(context, package_share, ros_gz_sim_share):
         [
             gazebo,
             state_publisher,
+            command_bridge_after_spawn,
             spawn_robot,
             bridge,
             odom_adapter,
